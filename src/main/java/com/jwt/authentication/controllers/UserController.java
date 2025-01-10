@@ -48,8 +48,12 @@ public class UserController {
     // try to login as a user in the db
     @PostMapping("/login")
     @ResponseBody
-    public String login() {
-        return "";
+    public String login(@RequestBody User u) {
+        if (repository.findByName(u.getName()).get(0).getPassword().equals(u.getPassword())) {
+            return "200";
+        }
+        
+        return "201";
     }
 
 
@@ -59,7 +63,7 @@ public class UserController {
     public ResponseEntity<EntityModel<User>> register(@RequestBody User u) {
         User newUser = repository.save(u);
         
-        return ResponseEntity.created(linkTo(methodOn(UserController.class).login()).toUri()).body(
+        return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
                 assembler.toModel(newUser));
     }
 }
