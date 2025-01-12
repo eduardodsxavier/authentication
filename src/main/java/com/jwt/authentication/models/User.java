@@ -1,7 +1,11 @@
 package com.jwt.authentication.models;
 
 import java.util.Objects;
+import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.RSAPrivateKey;
 
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.JWT;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -70,9 +74,15 @@ public class User {
             && Objects.equals(this.admin, u.admin);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.id, this.name, this.password, this.admin);
+    public String toJwt() {
+        Algorithm algorithm = Algorithm.none();
+
+        return JWT.create()
+            .withClaim("id", id)
+            .withClaim("name", name)
+            .withClaim("password", password)
+            .withClaim("admin", admin)
+            .sign(algorithm);
     }
     
     @Override

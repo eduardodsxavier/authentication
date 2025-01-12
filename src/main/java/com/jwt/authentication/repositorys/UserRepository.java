@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.jwt.authentication.models.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
-    @Query("SELECT u FROM User u WHERE u.name = %?1")
-    List<User> findByName(String name);
+    @Query("SELECT u FROM User u WHERE u.name = %?1 AND u.password = %?2")
+    List<User> findUser(String name, String password);
 
 }
