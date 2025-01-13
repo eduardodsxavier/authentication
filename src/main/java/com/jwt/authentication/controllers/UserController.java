@@ -50,19 +50,14 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<String> login(@RequestBody User u) {
         try {
-            User loginUser = repository.findUser(u.getName(), u.getPassword()).get(0);
             return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
-                    loginUser.toJwt());
+                    repository.findUser(u.getName(), u.getPassword()).get(0).getJwt());
         }
         catch (IndexOutOfBoundsException e) {
             return ResponseEntity.created(linkTo(methodOn(UserController.class).register(u)).toUri()).body(
                     "fail to login");
         }
-        
-        
-
     }
-
 
     // try to add a user in the db
     @PostMapping("/register")

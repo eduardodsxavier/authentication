@@ -1,11 +1,10 @@
 package com.jwt.authentication.models;
 
 import java.util.Objects;
-import java.security.interfaces.RSAPublicKey;
-import java.security.interfaces.RSAPrivateKey;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.JWT;
+import java.util.Map;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -16,6 +15,7 @@ public class User {
     private String name;
     private String password;
     private boolean admin;
+    private String jwt;
 
     User() {}
 
@@ -24,10 +24,12 @@ public class User {
         this.name = name;
         this.password = password;
         this.admin = admin;
+        setJwt();
     }
 
     public void setId(Long id) {
         this.id = id;
+        setJwt();
     }
 
     public Long getId() {
@@ -36,6 +38,7 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+        setJwt();
     }
 
     public String getName() {
@@ -44,6 +47,7 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+        setJwt();
     }
 
     public String getPassword() {
@@ -52,10 +56,26 @@ public class User {
 
     public void setAdmin(boolean admin) {
         this.admin = admin;
+        setJwt();
     }
 
     public boolean getAdmin() {
         return admin;
+    }
+
+    public void setJwt() {
+        this.jwt = JWT.create()
+            .withHeader(Map.of("alg", "HS256", "typ", "JWT"))
+            .withClaim("id", id)
+            .withClaim("name", name)
+            .withClaim("password", password)
+            .withClaim("admin", admin)
+            .sign(Algorithm.HMAC256("secret"));
+    }
+
+    public String getJwt() {
+        setJwt();
+        return jwt;
     }
 
     @Override
@@ -74,17 +94,6 @@ public class User {
             && Objects.equals(this.admin, u.admin);
     }
 
-    public String toJwt() {
-        Algorithm algorithm = Algorithm.none();
-
-        return JWT.create()
-            .withClaim("id", id)
-            .withClaim("name", name)
-            .withClaim("password", password)
-            .withClaim("admin", admin)
-            .sign(algorithm);
-    }
-    
     @Override
     public String toString() {
         return "User{id=" + this.id + ", name=" + this.name + ", password=" + this.password 
