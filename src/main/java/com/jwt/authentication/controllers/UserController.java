@@ -50,8 +50,11 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<String> login(@RequestBody User u) {
         try {
+            User loginUser = repository.findUser(u.getName(), u.getPassword());
+            loginUser.setJwt();
+            repository.save(loginUser);
             return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
-                    repository.findUser(u.getName(), u.getPassword()).get(0).getJwt());
+                    loginUser.getJwt());
         }
         catch (IndexOutOfBoundsException e) {
             return ResponseEntity.created(linkTo(methodOn(UserController.class).register(u)).toUri()).body(
@@ -67,5 +70,20 @@ public class UserController {
         
         return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
                 assembler.toModel(newUser));
+    }
+
+
+    @PostMapping("/jwt")
+    @ResponseBody
+    public ResponseEntity<String> loginJwt(@RequestBody User u) {
+        try {
+            User loginUser = repository.findJwt(u.getJwt());
+            return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
+                    loginUser.toString());
+        }
+        catch (NullPointerException e) {
+            return ResponseEntity.created(linkTo(methodOn(UserController.class).register(u)).toUri()).body(
+                    "JWT not find");
+        }
     }
 }
