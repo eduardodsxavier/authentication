@@ -13,7 +13,7 @@ import jakarta.persistence.Id;
 public class User {
     private @Id @GeneratedValue Long id;
     private String name;
-    private int password;
+    private String password;
     private boolean admin;
     private String jwt;
 
@@ -22,7 +22,7 @@ public class User {
     User(Long id, String name, String password, boolean admin) {
         this.id = id;
         this.name = name;
-        this.password = Objects.hash(password);
+        this.password = Integer.toString(Objects.hash(password));
         this.admin = admin;
         setJwt();
     }
@@ -46,11 +46,11 @@ public class User {
     }
 
     public void setPassword(String password) {
-        this.password = Objects.hash(password);
+        this.password = Integer.toString(Objects.hash(password));
         setJwt();
     }
 
-    public int getPassword() {
+    public String getPassword() {
         return password;
     }
 

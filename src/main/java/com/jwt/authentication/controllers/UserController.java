@@ -23,13 +23,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.jwt.authentication.models.User;
 import com.jwt.authentication.repositorys.UserRepository;
 import com.jwt.authentication.assembler.UserModelAssembler;
+import com.jwt.authentication.exception.UserNotFoundException;
 
 @RequestMapping(path="/user")
 @Controller
 public class UserController {
     private UserRepository repository;
     private UserModelAssembler assembler;
-    
+
     UserController(UserRepository repository, UserModelAssembler assembler) {
         this.repository = repository;
         this.assembler = assembler;
@@ -44,7 +45,7 @@ public class UserController {
 
         return CollectionModel.of(users, linkTo(methodOn(UserController.class).all()).withSelfRel());
     }
-    
+
     // try to login as a user in the db
     @PostMapping("/login")
     @ResponseBody
@@ -65,11 +66,11 @@ public class UserController {
     // try to add a user in the db
     @PostMapping("/register")
     @ResponseBody
-    public ResponseEntity<EntityModel<User>> register(@RequestBody User u) {
+    public ResponseEntity<String> register(@RequestBody User u) {
         User newUser = repository.save(u);
-        
+
         return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
-                assembler.toModel(newUser));
+                newUser.getJwt());
     }
 
 
@@ -83,6 +84,45 @@ public class UserController {
         }
         catch (NullPointerException e) {
             return ResponseEntity.created(linkTo(methodOn(UserController.class).register(u)).toUri()).body(
+                    "JWT not find");
+        }
+    }
+
+    @PostMapping("/update")
+    @ResponseBody
+    public ResponseEntity<String> update(@RequestBody User u) {
+        try {
+            User user = repository.findJwt(u.getJwt());
+            user.setName(u.getName());
+            user.setPassword(u.getPassword());
+            repository.save(user);
+            return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
+                    user.getJwt());
+        }
+        catch (NullPointerException e) {
+            return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
+                    "JWT not find");
+        }
+    }
+
+
+    @PostMapping("/admin/{id}")
+    @ResponseBody
+    public ResponseEntity<String> changeAdmin(@PathVariable long id, @RequestBody User u) {
+        try {
+            User user = repository.findJwt(u.getJwt());
+            if (!user.getAdmin()){ 
+                return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
+                        "JWT need to be from a admin");
+            }
+            user = repository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+            user.setAdmin(!user.getAdmin());
+            repository.save(user);
+            return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
+                    "user admin changed");
+        }
+        catch (NullPointerException e) {
+            return ResponseEntity.created(linkTo(methodOn(UserController.class).all()).toUri()).body(
                     "JWT not find");
         }
     }

@@ -7,7 +7,7 @@ import com.jwt.authentication.models.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
     @Query("SELECT u FROM User u WHERE u.name = %?1 AND u.password = %?2")
-    User findUser(String name, int password);
+    User findUser(String name, String password);
 
     @Query("SELECT u FROM User u WHERE u.jwt = %?1")
     User findJwt(String jwt);
